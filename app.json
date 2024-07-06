@@ -18,10 +18,18 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.pavish_r.weatherapp"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "8a8f0be5-9986-4977-b6ce-f851cc250510",
+        "apiUrl": "http://api.weatherapi.com/v1",
+      "apiKey": "87b334ce5b1443b4ad060421241206x"
+      }
     }
   }
 }
