@@ -1,36 +1,41 @@
-import { View, Text, Alert, SafeAreaView, StyleSheet, ActivityIndicator, ScrollView, RefreshControl } from 'react-native';
 import React, { useEffect, useState } from 'react';
-import * as Location from 'expo-location';
+import { View, Text, Alert, SafeAreaView, ActivityIndicator, ScrollView, RefreshControl } from 'react-native';
+import * as Location from 'expo-location'; 
+import styles from './WeatherStyles'; // Import the styles
 
-const openWeatherKey = '87b334ce5b1443b4ad060421241206 ';
+const weatherapi = '87b334ce5b1443b4ad060421241206 ';
 
 const Weather = () => {
     const [forecast, setForecast] = useState(null);
     const [refreshing, setRefreshing] = useState(false);
-    
+    const [loading, setLoading] = useState(true);
+
     const loadForecast = async () => {
         setRefreshing(true);
-        console.log('Requesting location permissions...');
-        const { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== 'granted') {
-            Alert.alert('Permission access for the location is denied');
-            setRefreshing(false);
-            return;
-        }
-        
+        setLoading(true);
+
         try {
+            console.log('Requesting location permissions...');
+            const { status } = await Location.requestForegroundPermissionsAsync();
+            if (status !== 'granted') {
+                Alert.alert('Permission access for the location is denied');
+                setRefreshing(false);
+                setLoading(false);
+                return;
+            }
+
             console.log('Fetching location...');
-            let location = await Location.getCurrentPositionAsync({ enableHighAccuracy: true });
+            const location = await Location.getCurrentPositionAsync({ enableHighAccuracy: true });
             console.log('Location fetched:', location);
-            
+
             const lat = parseFloat(location.coords.latitude.toFixed(2));
             const lon = parseFloat(location.coords.longitude.toFixed(2));
 
-            console.log(lat, lon);  // Example output: 11.27, 77.61
+            console.log(lat, lon);
 
-            let fullUrl = `http://api.weatherapi.com/v1/current.json?key=${openWeatherKey}&q=${lat},${lon}&aqi=no`;
+            const fullUrl = `http://api.weatherapi.com/v1/current.json?key=${weatherapi}&q=${lat},${lon}&aqi=no`;
             console.log('Fetching weather data from:', fullUrl);
-            
+
             const response = await fetch(fullUrl);
             const data = await response.json();
 
@@ -44,9 +49,10 @@ const Weather = () => {
             setForecast(data);
         } catch (error) {
             console.log('Error:', error);
-            Alert.alert('Error', error.message || 'Failed to fetch data');
+            Alert.alert('Error: ' + (error.message || 'Failed to fetch data'));
         } finally {
             setRefreshing(false);
+            setLoading(false);
         }
     };
 
@@ -54,16 +60,25 @@ const Weather = () => {
         loadForecast();
     }, []);
 
+    if (loading) {
+        return (
+            <SafeAreaView style={styles.loading}>
+                <ActivityIndicator size="large" />
+            </SafeAreaView>
+        );
+    }
+
     if (!forecast) {
         return (
             <SafeAreaView style={styles.loading}>
-                <ActivityIndicator size='large' />
+                <Text>Unable to fetch weather data.</Text>
             </SafeAreaView>
         );
     }
 
     const current = forecast.current;
-    const location=forecast.location;
+    const location = forecast.location;
+
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView
@@ -75,21 +90,13 @@ const Weather = () => {
                 }
                 contentContainerStyle={styles.scrollContainer}
             >
-                <Text style={styles.title}>
-                    Current Weather
-                </Text>
+                <Text style={styles.title}>Current Weather</Text>
                 <Text style={styles.locationText}>
-                    Your Location:{location.name},{location.region}
-                    
+                    Your Location: {location.name}, {location.region}
                 </Text>
                 <View style={styles.weatherContainer}>
-                    <Text style={styles.weatherText}>
-                        Condition: {current.condition.text}
-                    </Text>
-                    <Text style={styles.weatherText}>
-                        Temperature: {current.temp_c}°C
-                    </Text>
-                    {/* Add more UI elements to display additional weather information here */}
+                    <Text style={styles.weatherText}>Condition: {current.condition.text}</Text>
+                    <Text style={styles.weatherText}>Temperature: {current.temp_c}°C</Text>
                 </View>
             </ScrollView>
         </SafeAreaView>
@@ -97,40 +104,3 @@ const Weather = () => {
 };
 
 export default Weather;
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor:'lightblue',
-        borderColor:'lightyellow',
-        borderCurve:'3px'
-        
-    },
-    loading: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    scrollContainer: {
-        flexGrow: 1,
-        justifyContent: 'center',
-        paddingHorizontal: 20,
-    },
-    title: {
-        textAlign: 'center',
-        fontSize: 36,
-        fontWeight: 'bold',
-        color: '#C84B31',
-    },
-    locationText: {
-        alignItems: 'center',
-        textAlign: 'center',
-    },
-    weatherContainer: {
-        marginVertical: 20,
-    },
-    weatherText: {
-        fontSize: 20,
-        textAlign: 'center',
-    },
-});
