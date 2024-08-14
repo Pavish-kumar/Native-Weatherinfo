@@ -14,7 +14,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#fff',
-        alignItems: 'stretch', // Changed to 'stretch' to allow Weather component to use full width
+        alignItems: 'stretch', 
         justifyContent: 'center',
     },
 });
