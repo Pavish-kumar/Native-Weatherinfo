@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Alert, SafeAreaView, ActivityIndicator, ScrollView, RefreshControl } from 'react-native';
 import * as Location from 'expo-location'; 
-import styles from './WeatherStyles'; // Import the styles
-
-const weatherapi = '87b334ce5b1443b4ad060421241206 ';
+import styles from './WeatherStyles';
+const weatherapi = 'a52ce42073604dd3bbc132923241508'; 
 
 const Weather = () => {
     const [forecast, setForecast] = useState(null);
     const [refreshing, setRefreshing] = useState(false);
     const [loading, setLoading] = useState(true);
-
+    
     const loadForecast = async () => {
+        console.log('API Key:', weatherapi);
         setRefreshing(true);
         setLoading(true);
 
@@ -31,9 +31,9 @@ const Weather = () => {
             const lat = parseFloat(location.coords.latitude.toFixed(2));
             const lon = parseFloat(location.coords.longitude.toFixed(2));
 
-            console.log(lat, lon);
+            console.log('Latitude:', lat, 'Longitude:', lon);
 
-            const fullUrl = `http://api.weatherapi.com/v1/current.json?key=${weatherapi}&q=${lat},${lon}&aqi=no`;
+            const fullUrl = `https://api.weatherapi.com/v1/current.json?key=${weatherapi}&q=${lat},${lon}&aqi=no`;
             console.log('Fetching weather data from:', fullUrl);
 
             const response = await fetch(fullUrl);
@@ -48,7 +48,7 @@ const Weather = () => {
             console.log('Weather data fetched:', data);
             setForecast(data);
         } catch (error) {
-            console.log('Error:', error);
+            console.log('Error:', error.message);
             Alert.alert('Error: ' + (error.message || 'Failed to fetch data'));
         } finally {
             setRefreshing(false);
@@ -76,8 +76,7 @@ const Weather = () => {
         );
     }
 
-    const current = forecast.current;
-    const location = forecast.location;
+    const { current, location } = forecast;
 
     return (
         <SafeAreaView style={styles.container}>

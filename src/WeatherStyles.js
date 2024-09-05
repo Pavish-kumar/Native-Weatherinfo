@@ -5,6 +5,8 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: 'lightblue',
         padding: 20,
+        justifyContent:'center',
+        alignItems:'center',
     },
     loading: {
         flex: 1,
@@ -38,7 +40,9 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 4, height: 2 },
         shadowOpacity: 0.8,
         shadowRadius: 2,
+        width:500,
         elevation: 5,
+        
 
     },
     weatherText: {
