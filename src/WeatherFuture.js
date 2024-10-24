@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import * as Location from 'expo-location';
 
-const weatherapi = 'a52ce42073604dd3bbc132923241508'; // Make sure this API key is valid.
+const weatherapi = 'a52ce42073604dd3bbc132923241508'; // Ensure this API key is valid.
 
 const fetchFutureWeather = async (lat, lon) => {
     const days = 7; // Number of future days to forecast
@@ -24,10 +24,18 @@ const fetchFutureWeather = async (lat, lon) => {
 
 const WeatherFuture = () => {
     const [futureWeather, setFutureWeather] = useState([]);
+    const [loading, setLoading] = useState(true); // Added loading state
 
     useEffect(() => {
         const fetchWeatherData = async () => {
             try {
+                const { status } = await Location.requestForegroundPermissionsAsync();
+                if (status !== 'granted') {
+                    Alert.alert('Permission to access location was denied');
+                    setLoading(false);
+                    return;
+                }
+
                 const location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Highest });
                 const lat = parseFloat(location.coords.latitude.toFixed(8));
                 const lon = parseFloat(location.coords.longitude.toFixed(8));
@@ -37,11 +45,17 @@ const WeatherFuture = () => {
             } catch (error) {
                 console.log('Error fetching location or weather data:', error.message);
                 Alert.alert('Error fetching location or weather data: ' + error.message);
+            } finally {
+                setLoading(false); // Set loading to false after the fetch
             }
         };
 
         fetchWeatherData();
     }, []);
+
+    if (loading) {
+        return <ActivityIndicator size="large" style={styles.loading} />; // Show loading indicator
+    }
 
     return (
         <ScrollView style={styles.futureWeatherContainer}>
@@ -66,9 +80,16 @@ const styles = StyleSheet.create({
     futureWeatherContainer: {
         flex: 1,
         padding: 10,
+        paddingBottom:'5%',
+    },
+    loading: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     dayContainer: {
         marginBottom: 10,
+        paddingBottom:25,
         padding: 15,
         backgroundColor: '#f9f9f9',
         borderRadius: 5,

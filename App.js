@@ -1,22 +1,39 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
-import Weather from './src/Weather'; 
-import WeatherFuture from './src/WeatherFuture';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import LoginScreen from './src/LoginScreen';
+import SignupScreen from './src/SignupScreen';
+import HomeScreen from './src/Weather';
 
-export default function App() {
-    return (
-        <View style={styles.container}>
-            <Weather />
-            <WeatherFuture/>
-        </View>
-    );
-}
+const Stack = createStackNavigator();
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#fff',
-        alignItems: 'stretch', // Ensure full width for the Weather component
-        justifyContent: 'center',
-    }
-});
+const App = () => {
+  return (
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName="Login">
+        <Stack.Screen 
+          name="Login" 
+          component={LoginScreen} 
+          options={{ 
+            title: 'Login', 
+            headerStyle: { backgroundColor: '#fff' },
+            headerTintColor: 'black',
+            headerTitleStyle: { fontWeight: 'bold' },
+          }} 
+        />
+        <Stack.Screen 
+          name="Signup" 
+          component={SignupScreen} 
+          options={{ title: 'Signup' }} 
+        />
+        <Stack.Screen 
+          name="Home" 
+          component={HomeScreen} 
+          options={{ title: 'Home' }} 
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+};
+
+export default App;
