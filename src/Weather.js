@@ -16,10 +16,8 @@ import {
 import * as Location from 'expo-location';
 import { getAuth, signOut, onAuthStateChanged, deleteUser } from 'firebase/auth';
 import { useNavigation } from '@react-navigation/native';
-
 const { height } = Dimensions.get('window');
-const weatherApi = '8050dbb54d78456abe342621242510'; // Replace with WEATHER_API_KEY if using .env
-
+const weatherApi = '8050dbb54d78456abe342621242510';
 const Weather = () => {
     const [forecast, setForecast] = useState(null);
     const [pastWeather, setPastWeather] = useState([]);
@@ -30,11 +28,8 @@ const Weather = () => {
     const [currentUser, setCurrentUser] = useState(null);
     const [showDropdown, setShowDropdown] = useState(false);
     const [favorites, setFavorites] = useState([]);
-    
     const navigation = useNavigation();
     const auth = getAuth();
-
-    // Function to load forecast data
     const loadForecast = async (location = null) => {
         setLoading(true);
         try {
@@ -44,7 +39,6 @@ const Weather = () => {
                 setLoading(false);
                 return;
             }
-
             let lat, lon;
             if (location) {
                 const locationResponse = await fetch(`https://api.weatherapi.com/v1/search.json?key=${weatherApi}&q=${location}`);
@@ -59,8 +53,6 @@ const Weather = () => {
                 lat = userLocation.coords.latitude;
                 lon = userLocation.coords.longitude;
             }
-
-            // Fetch current weather data
             const fullUrl = `https://api.weatherapi.com/v1/current.json?key=${weatherApi}&q=${lat},${lon}&aqi=no`;
             const response = await fetch(fullUrl);
             const data = await response.json();
@@ -68,8 +60,6 @@ const Weather = () => {
                 throw new Error(data.error.message || 'Failed to fetch weather data');
             }
             setForecast(data);
-
-            // Fetch future weather data (7-day forecast)
             const futureUrl = `https://api.weatherapi.com/v1/forecast.json?key=${weatherApi}&q=${lat},${lon}&days=7&aqi=no&alerts=no`;
             const futureResponse = await fetch(futureUrl);
             const futureData = await futureResponse.json();
@@ -77,8 +67,6 @@ const Weather = () => {
                 throw new Error(futureData.error.message || 'Failed to fetch future weather data');
             }
             setFutureWeather(futureData.forecast.forecastday);
-
-            // Fetch past weather data (7-day history)
             const pastWeatherData = [];
             const today = new Date();
             for (let i = 1; i <= 7; i++) {
@@ -101,7 +89,6 @@ const Weather = () => {
             setRefreshing(false);
         }
     };
-
     const onRefresh = () => {
         setRefreshing(true);
         loadForecast();
@@ -114,7 +101,6 @@ const Weather = () => {
             Alert.alert('Error', 'Failed to sign out');
         }
     };
-
     const handleDeleteAccount = () => {
         Alert.alert(
             'Delete Account',
@@ -139,7 +125,6 @@ const Weather = () => {
             ]
         );
     };
-
     const addFavorite = () => {
         if (locationInput && !favorites.includes(locationInput)) {
             setFavorites([...favorites, locationInput]);
@@ -148,16 +133,13 @@ const Weather = () => {
             Alert.alert('Error', 'Location is empty or already added to favorites');
         }
     };
-
     const removeFavorite = (location) => {
         setFavorites(favorites.filter(fav => fav !== location));
     };
-
     const handleFavoriteSelect = (location) => {
         loadForecast(location);
         setShowDropdown(false);
     };
-
     useEffect(() => {
         loadForecast();
         const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -166,7 +148,6 @@ const Weather = () => {
                 navigation.replace('Login');
             }
         });
-
         return unsubscribe;
     }, []);
 
@@ -177,7 +158,6 @@ const Weather = () => {
             </View>
         );
     }
-
     if (!forecast) {
         return (
             <View style={styles.loading}>
@@ -185,9 +165,7 @@ const Weather = () => {
             </View>
         );
     }
-
     const { current, location } = forecast;
-
     return (
         <View style={styles.container}>
             <TextInput
@@ -201,7 +179,6 @@ const Weather = () => {
             <TouchableOpacity style={styles.dropdownButton} onPress={() => setShowDropdown(prev => !prev)}>
                 <Text style={styles.dropdownButtonText}>Your Profile</Text>
             </TouchableOpacity>
-
             {showDropdown && (
                 <View style={styles.dropdownMenu}>
                     <Button title="Sign Out" onPress={handleSignOut} />
@@ -216,7 +193,6 @@ const Weather = () => {
                     <Button title="Add to Favorites" onPress={addFavorite} />
                 </View>
             )}
-
             <ScrollView
                 contentContainerStyle={styles.scrollView}
                 style={{ maxHeight: height * 0.75 }}
@@ -226,7 +202,7 @@ const Weather = () => {
             >
                 <Text style={styles.title}>Current Weather</Text>
                 <Text style={styles.locationText}>
-                    Weather Location: {location.name}, {location.region}
+                    Weather Location: {location.name}, {location.region}, {location.country}.
                 </Text>
                 <View style={styles.weatherContainer}>
                     <Text style={styles.weatherText}>Condition: {current.condition.text}</Text>
@@ -238,18 +214,18 @@ const Weather = () => {
                     <Text style={styles.futureTitle}>Past Weather</Text>
                     {pastWeather.map((day, index) => (
                         <View key={index} style={styles.dayContainer}>
-                            <Text style={styles.dateText}>{day.date}</Text>
+                            <Text style={styles.dateText}>Date: {day.date}</Text>
                             <Text style={styles.tempText}>Temperature: {day.day.avgtemp_c}°C</Text>
-                            <Text style={styles.conditionText}>{day.day.condition.text}</Text>
+                            <Text style={styles.conditionText}>Condition: {day.day.condition.text}</Text>
                         </View>
                     ))}
                 </View>
                 <Text style={styles.futureTitle}>Future Weather</Text>
                 {futureWeather.map((day, index) => (
                     <View key={index} style={styles.dayContainer}>
-                        <Text style={styles.dateText}>{day.date}</Text>
+                        <Text style={styles.dateText}>Date: {day.date}</Text>
                         <Text style={styles.tempText}>Temperature: {day.day.avgtemp_c}°C</Text>
-                        <Text style={styles.conditionText}>{day.day.condition.text}</Text>
+                        <Text style={styles.conditionText}>Condition: {day.day.condition.text}</Text>
                     </View>
                 ))}
             </ScrollView>
@@ -263,6 +239,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         backgroundSize: 'cover',
         backgroundRepeat: 'no-repeat',
+        backgroundColor:'#0009',
+        backgroundGradient: "vertical"
     },
     loading: {
         flex: 1,
@@ -271,14 +249,14 @@ const styles = StyleSheet.create({
     },
     locationInput: {
         height: 40,
-        borderColor: 'gray',
+        borderColor: 'blue',
         borderWidth: 1,
         borderRadius: 8,
         marginBottom: 10,
         paddingHorizontal: 12,
         backgroundColor: '#f2f2f2',
         fontSize: 16,
-        width: '90%',
+        width:'75%',
     },
     dropdownButton: {
         backgroundColor: '#007BFF',
@@ -327,7 +305,7 @@ const styles = StyleSheet.create({
     scrollView: {
         padding: 16,
         width: '100%',
-        backgroundColor:'#0115',
+        backgroundColor:'lightblue',
         backgroundSize:'50%',
         borderRadius:10,
         paddingBottom:120,
@@ -337,51 +315,59 @@ const styles = StyleSheet.create({
         fontWeight: '700',
         marginBottom: 12,
         color: '#333',
+        alignSelf:'center'
     },
     locationText: {
-        fontSize: 20,
-        color: '#555',
+        fontSize: 22,
+        color: 'green',
+        fontWeight:'bold',
         marginBottom: 8,
     },
     weatherContainer: {
         padding: 15,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        backgroundColor: '#fff',
         borderRadius: 10,
         marginBottom: 10,
+        marginTop:10,
         width: '100%',
         alignItems: 'center',
+        justifyContent:'center',
     },
     weatherText: {
-        fontSize: 18,
-        color: '#fff',
+        fontSize: 20,
+        color: 'purple',
+        fontWeight:'400',
         marginBottom: 5,
     },
     futureTitle: {
+        alignSelf:'center',
         fontSize: 22,
         fontWeight: '600',
         color: '#444',
-        marginTop: 20,
+        marginTop: 10,
+        marginBottom:10,
     },
     dayContainer: {
-        padding: 15,
+        padding: 20,
         backgroundColor: 'rgba(255, 255, 255, 0.8)',
         borderRadius: 8,
         marginBottom: 10,
+        padding:15,
         width: '100%',
     },
     dateText: {
         fontSize: 18,
         fontWeight: '600',
-        color: '#3339',
+        color: 'darkorange',
     },
     tempText: {
-        fontSize: 16,
-        color: '#000',
+        fontSize: 18,
+        color: 'black',
     },
     conditionText: {
-        fontSize: 16,
-        fontStyle: 'italic',
-        color: '#555',
+        fontSize: 18,
+        color: 'violet',
+        fontWeight:'600'
     },
 });
 
